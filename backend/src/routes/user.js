@@ -9,7 +9,11 @@ const db = require('../db');
  */
 router.post('/profile', async (req, res) => {
     const auth0_id = req.auth.payload.sub;
-    const { first_name, last_name, interests } = req.body;
+    const { first_name, firstName, last_name, lastName, interests, hobbies } = req.body;
+    
+    const fName = first_name || firstName;
+    const lName = last_name || lastName;
+    const ints = interests || hobbies;
 
     try {
         const query = `
@@ -23,7 +27,7 @@ router.post('/profile', async (req, res) => {
                 last_ping_time = CURRENT_TIMESTAMP
             RETURNING *;
         `;
-        const result = await db.query(query, [auth0_id, first_name, last_name, interests]);
+        const result = await db.query(query, [auth0_id, fName, lName, ints]);
         
         res.json({ 
             success: true, 
@@ -60,11 +64,15 @@ router.get('/profile', async (req, res) => {
 
 /**
  * @route   PUT /api/user/profile
- * @desc    Update current user profile (alternative format for backup frontend)
+ * @desc    Update current user profile
  */
 router.put('/profile', async (req, res) => {
     const auth0_id = req.auth.payload.sub;
-    const { firstName, lastName, hobbies } = req.body;
+    const { first_name, firstName, last_name, lastName, interests, hobbies } = req.body;
+    
+    const fName = first_name || firstName;
+    const lName = last_name || lastName;
+    const ints = interests || hobbies;
 
     try {
         const query = `
@@ -73,12 +81,12 @@ router.put('/profile', async (req, res) => {
             WHERE auth0_id = $1
             RETURNING *;
         `;
-        const result = await db.query(query, [auth0_id, firstName, lastName, hobbies]);
+        const result = await db.query(query, [auth0_id, fName, lName, ints]);
         
         if (result.rowCount === 0) {
             // If not found, insert
             const insertQuery = `INSERT INTO users (auth0_id, first_name, last_name, interests) VALUES ($1, $2, $3, $4) RETURNING *`;
-            const insertRes = await db.query(insertQuery, [auth0_id, firstName, lastName, hobbies]);
+            const insertRes = await db.query(insertQuery, [auth0_id, fName, lName, ints]);
             return res.json({ success: true, user: insertRes.rows[0] });
         }
 

@@ -1089,10 +1089,9 @@
     <button class="nav-cta" id="nav-login-btn">Log in</button>
     <!-- Logged IN state -->
     <div class="nav-user" id="nav-user">
-      <img class="nav-avatar" id="nav-avatar" src="" alt="avatar" style="display:none;" />
+      <a href="dashboard.html" class="nav-cta" style="margin-right: 12px; font-size: 0.75rem; padding: 6px 16px;">Dashboard</a>
+      <img class="nav-avatar" id="nav-avatar" src="" alt="Avatar" style="display:none;" />
       <span class="nav-username" id="nav-username"></span>
-      <button class="nav-logout" onclick="window.location.href='dashboard.html'"
-        style="color:var(--blue); font-weight:700;">Dashboard</button>
       <button class="nav-logout" id="nav-logout-btn">Log out</button>
     </div>
   </nav>
@@ -1370,6 +1369,16 @@
         loginBtn.style.display  = 'none';
         userDiv.style.display   = 'flex';
         document.getElementById('nav-username').textContent = user.nickname || user.name || user.email;
+        
+        // Add Dashboard link to nav if it doesn't exist
+        const navLinks = document.querySelector('.nav-links');
+        if (!document.getElementById('nav-dash-link')) {
+          const dashLi = document.createElement('li');
+          dashLi.id = 'nav-dash-link';
+          dashLi.innerHTML = '<a href="dashboard.html" style="color:var(--blue); font-weight:700;">Dashboard 🤚</a>';
+          navLinks.appendChild(dashLi);
+        }
+
         if (user.picture) {
           const avatar = document.getElementById('nav-avatar');
           if (avatar) {
@@ -1380,16 +1389,24 @@
 
         // Update the hero/cta buttons to point to the dashboard
         const heroBtn = document.getElementById('hero-signup-btn');
-        if (heroBtn) heroBtn.textContent = 'Go to Dashboard 🤚';
+        if (heroBtn) {
+          heroBtn.textContent = 'Go to Dashboard 🤚';
+          heroBtn.onclick = () => window.location.href = 'dashboard.html';
+        }
 
         const ctaSignup = document.getElementById('cta-signup-btn');
-        if (ctaSignup) ctaSignup.textContent = 'Go to Dashboard 🤚';
+        if (ctaSignup) {
+          ctaSignup.textContent = 'Go to Dashboard 🤚';
+          ctaSignup.onclick = () => window.location.href = 'dashboard.html';
+        }
 
         const ctaLogin = document.getElementById('cta-login-btn');
         if (ctaLogin) ctaLogin.style.display = 'none';
       } else {
         loginBtn.style.display = 'block';
         userDiv.style.display  = 'none';
+        const dashLink = document.getElementById('nav-dash-link');
+        if (dashLink) dashLink.remove();
       }
     }
 

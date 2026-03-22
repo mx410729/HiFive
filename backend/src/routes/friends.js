@@ -76,7 +76,6 @@ router.get('/', async (req, res) => {
                    u1.auth0_id as req_auth0, u1.first_name as req_fn, u1.last_name as req_ln, (u1.first_name || ' ' || u1.last_name) as req_username,
                    u2.auth0_id as add_auth0, u2.first_name as add_fn, u2.last_name as add_ln, (u2.first_name || ' ' || u2.last_name) as add_username
             FROM friendships f
-            FROM friendships f
             JOIN users u1 ON f.requester_id = u1.id
             JOIN users u2 ON f.addressee_id = u2.id
             WHERE f.requester_id = $1 OR f.addressee_id = $1

@@ -1029,9 +1029,20 @@
         const res = await fetch(`${API_BASE}/api/users/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (res.status === 404) {
+          // New user, show setup overlay and pre-fill if possible
+          const user = await auth0Client.getUser();
+          if (user.given_name) document.getElementById('setup-firstname').value = user.given_name;
+          if (user.family_name) document.getElementById('setup-lastname').value = user.family_name;
+          
+          document.getElementById('profile-setup-overlay').classList.add('visible');
+          return;
+        }
+
         if (res.ok) {
-          const profile = await res.json();
-          if (!profile.first_name || !profile.last_name) {
+          const result = await res.json();
+          if (!result.first_name || !result.last_name) {
             document.getElementById('profile-setup-overlay').classList.add('visible');
           }
         }
@@ -1052,16 +1063,23 @@
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ firstName, lastName, hobbies })
+          body: JSON.stringify({ 
+            first_name: firstName, 
+            last_name: lastName, 
+            interests: hobbies 
+          })
         });
         if (res.ok) {
           document.getElementById('profile-setup-overlay').classList.remove('visible');
           showToast('Profile setup complete! 🤚');
+          fetchUsers();
+          fetchFriends();
         } else {
           showToast('Failed to save profile. Try again.');
         }
       } catch (err) {
-        showToast('Error saving profile.');
+        console.error('Error saving profile:', err);
+        showToast('Error saving profile. Check console for details.');
       }
     }
 
@@ -1146,7 +1164,11 @@
         const res = await fetch(`${API_BASE}/api/users/profile`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstName, lastName, hobbies })
+          body: JSON.stringify({ 
+            first_name: firstName, 
+            last_name: lastName, 
+            interests: hobbies 
+          })
         });
         if (res.ok) {
           await renderProfileTab();
