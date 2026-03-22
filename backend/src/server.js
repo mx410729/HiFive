@@ -11,6 +11,8 @@ const usersRoutes = require('./routes/user');
 const messagesRoutes = require('./routes/messages');
 const icebreakerRoutes = require('./routes/icebreaker');
 
+const path = require('path');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -31,6 +33,9 @@ app.options('*', cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Serve static frontend files from the root directory
+app.use(express.static(path.join(__dirname, '../../')));
 
 // Auth0 JWT checker
 const checkJwt = auth({
