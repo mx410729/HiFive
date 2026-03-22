@@ -192,6 +192,18 @@
       border: 2px solid transparent;
     }
 
+    .unread-badge {
+      background: #FF3B30;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 12px;
+      min-width: 18px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
     .status-dot {
       position: absolute;
       bottom: 0;
@@ -240,13 +252,13 @@
     .modal-actions { display: flex; gap: 12px; }
     .modal-btn {
       flex: 1;
-      padding: 16px;
+      padding: 10px 16px;
       border-radius: 100px;
       font-family: 'Syne', sans-serif;
       font-weight: 800;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -516,7 +528,7 @@
 
   <!-- HEADER -->
   <header style="gap: 12px;">
-    <a href="hifive.html" class="header-back">← Home</a>
+    <a href="/" class="header-back">← Home</a>
     <input type="text" id="live-search" class="header-search-input search-hidden" placeholder="Search accounts..." autocomplete="off" />
   </header>
 
@@ -563,7 +575,7 @@
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <div class="nav-item" onclick="window.location='hifive.html'">
+    <div class="nav-item" onclick="window.location='/'">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       <span class="nav-label">Home</span>
     </div>
@@ -610,7 +622,7 @@
     const myUsername = localStorage.getItem('chatUsername');
 
     if (!token || !myUsername) {
-      window.location.href = 'hifive.html';
+      window.location.href = '/';
     }
 
     let people = [];
@@ -677,7 +689,7 @@
       
       let renderList = [];
       if (currentTab === 'friends') {
-          renderList = (friendsData?.friends || []).map(u => ({ id: u.id, name: u.username || u.name, isOnline: u.isOnline }));
+          renderList = (friendsData?.friends || []).map(u => ({ id: u.id, name: u.username || u.name, isOnline: u.isOnline, unreadCount: u.unreadCount || 0 }));
       } else if (currentTab === 'requests') {
           renderList = (friendsData?.pendingReceived || []).map(r => ({ id: r.user.id, name: r.user.username || r.user.name, requestId: r.requestId, isOnline: r.user.isOnline }));
       } else if (currentTab === 'search') {
@@ -712,6 +724,13 @@
             const nameEl = document.createElement('div');
             nameEl.className = 'person-name';
             nameEl.textContent = person.name;
+
+            if (person.unreadCount > 0) {
+              const badge = document.createElement('span');
+              badge.className = 'unread-badge';
+              badge.textContent = person.unreadCount;
+              nameEl.appendChild(badge);
+            }
 
             const btn = document.createElement('button');
             btn.className = 'add-btn';
@@ -832,6 +851,21 @@
         if (res.ok) {
           friendsData = await res.json();
           renderInviteList();
+          
+          // Update requests badge status based on pending requests
+          const requestsTab = document.getElementById('tab-requests');
+          if (friendsData.pendingReceived && friendsData.pendingReceived.length > 0) {
+            if (!requestsTab.querySelector('.req-badge')) {
+              const badge = document.createElement('span');
+              badge.className = 'req-badge';
+              badge.style.cssText = 'background:#FF3B30;color:#fff;border-radius:50%;font-size:0.65rem;padding:1px 5px;margin-left:4px;font-weight:700;';
+              badge.textContent = '!';
+              requestsTab.appendChild(badge);
+            }
+          } else {
+            const badge = requestsTab.querySelector('.req-badge');
+            if (badge) badge.remove();
+          }
         }
       } catch(err) { console.error('Error fetching friends:', err); }
     }
@@ -912,7 +946,7 @@
         if (err.message === 'Unauth') {
            localStorage.removeItem('chatToken');
            localStorage.removeItem('chatUsername');
-           window.location.href = 'hifive.html';
+           window.location.href = '/';
         }
       }
     }
@@ -1160,6 +1194,15 @@
           const senderName = msg.sender ? msg.sender.username : 'System';
           appendMessage(msg.content, isMine, senderName);
           scrollToBottom();
+        } else {
+          showToast(`New message from ${msg.sender ? msg.sender.username : 'System'}! 💬`);
+          if (friendsData && friendsData.friends && msg.sender) {
+            const friend = friendsData.friends.find(f => f.id === msg.sender.id);
+            if (friend) {
+              friend.unreadCount = (friend.unreadCount || 0) + 1;
+              if (currentTab === 'friends') renderInviteList();
+            }
+          }
         }
       });
 
@@ -1272,6 +1315,15 @@
       document.getElementById('chat-pane').classList.add('open');
       document.getElementById('chat-messages').innerHTML = '<div style="text-align:center;color:var(--text-muted);margin-top:40px;">Loading chat...</div>';
       
+      // Clear unread count locally
+      if (friendsData && friendsData.friends) {
+        const friend = friendsData.friends.find(f => f.id === partnerObj.id);
+        if (friend && friend.unreadCount > 0) {
+          friend.unreadCount = 0;
+          if (currentTab === 'friends') renderInviteList();
+        }
+      }
+
       initSocket();
       
       try {

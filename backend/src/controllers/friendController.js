@@ -148,6 +148,25 @@ exports.getFriends = async (req, res) => {
       }
     });
 
+    // Helper: count unread messages per sender
+    const unreadMessages = await prisma.message.findMany({
+      where: {
+        isRead: false,
+        senderId: { not: currentUserId },
+        conversation: {
+          participants: { some: { userId: currentUserId } }
+        }
+      },
+      select: { senderId: true }
+    });
+
+    const unreadMap = {};
+    unreadMessages.forEach(m => {
+      if (m.senderId) {
+        unreadMap[m.senderId] = (unreadMap[m.senderId] || 0) + 1;
+      }
+    });
+
     const friends = [];
     const pendingSent = [];
     const pendingReceived = [];
@@ -157,7 +176,10 @@ exports.getFriends = async (req, res) => {
       const otherUser = isSender ? req.receiver : req.sender;
       
       if (req.status === 'ACCEPTED') {
-        friends.push(otherUser);
+        friends.push({
+          ...otherUser,
+          unreadCount: unreadMap[otherUser.id] || 0
+        });
       } else if (req.status === 'PENDING') {
         if (isSender) {
           pendingSent.push({ requestId: req.id, user: otherUser });

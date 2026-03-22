@@ -23,9 +23,7 @@ const chatSocket = require('./sockets/chatSocket');
 // Serve the static frontend HTML files
 app.use(express.static(path.join(__dirname, '../../')));
 
-app.get('/', (req, res) => {
-  res.redirect('/hifive.html');
-});
+// The root route / now automatically serves index.html via express.static
 
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);

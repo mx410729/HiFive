@@ -53,6 +53,16 @@ exports.getChatHistory = async (req, res) => {
       }
     });
 
+    // Mark messages as read
+    prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: userId },
+        isRead: false
+      },
+      data: { isRead: true }
+    }).catch(err => console.error('Failed to mark messages as read:', err));
+
     res.json(messages);
   } catch (error) {
     console.error('getChatHistory error:', error);
