@@ -1,0 +1,37 @@
+name: hackduke-chat-backend
+region: nyc
+services:
+  - name: chat-api
+    github:
+      branch: main
+      repo: your-github-repo/HackDuke2026
+      deploy_on_push: true
+    source_dir: HackDuke2026/backend
+    environment_slug: node-js
+    instance_count: 2
+    instance_size_slug: basic-xxs
+    run_command: npm start
+    build_command: export DATABASE_URL=${chat-db.DATABASE_URL} && npm install && npx prisma generate
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${chat-db.DATABASE_URL}
+      - key: REDIS_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${chat-redis.REDIS_URL}
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+
+databases:
+  - name: chat-db
+    engine: PG
+    version: "15"
+    production: true
+  - name: chat-redis
+    engine: REDIS
+    version: "7"
+    production: true
