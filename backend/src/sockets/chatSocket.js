@@ -19,8 +19,17 @@ module.exports = (io) => {
     });
   });
 
-  io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.username} (${socket.user.userId})`);
+  io.on('connection', async (socket) => {
+    const userId = socket.user.userId;
+    console.log(`User connected: ${socket.user.username} (${userId})`);
+
+    // Update online status
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isOnline: true, lastSeen: new Date() }
+      });
+    } catch (err) { console.error('Error updating online status:', err); }
     
     // Join personal room for guaranteed delivery
     socket.join(`user_${socket.user.userId}`);
@@ -115,8 +124,14 @@ module.exports = (io) => {
       socket.join(conversationId);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       console.log(`User disconnected: ${socket.user.username}`);
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { isOnline: false, lastSeen: new Date() }
+        });
+      } catch (err) { console.error('Error updating offline status:', err); }
     });
   });
 };

@@ -143,8 +143,8 @@ exports.getFriends = async (req, res) => {
         OR: [{ senderId: currentUserId }, { receiverId: currentUserId }]
       },
       include: {
-        sender: { select: { id: true, username: true } },
-        receiver: { select: { id: true, username: true } }
+        sender: { select: { id: true, username: true, isOnline: true, lastSeen: true } },
+        receiver: { select: { id: true, username: true, isOnline: true, lastSeen: true } }
       }
     });
 

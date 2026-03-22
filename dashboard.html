@@ -179,17 +179,81 @@
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue-light), var(--blue-mid));
+      background: var(--blue-mid);
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-right: 12px;
+      color: var(--white);
+      font-weight: 700;
+      position: relative; /* Added for status dot */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      border: 2px solid transparent;
+    }
+
+    .status-dot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+    }
+    .status-online { background: #00C853; }
+    .status-offline { background: #9E9E9E; }
+
+    /* Custom Confirmation Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.visible { display: flex; animation: modal-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes modal-fade-in {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-card {
+      background: var(--bg);
+      border: 1px solid var(--separator);
+      border-radius: 28px;
+      padding: 32px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; color: var(--text); }
+    .modal-message { color: var(--text-muted); line-height: 1.6; margin-bottom: 32px; font-size: 0.95rem; }
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 100px;
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 1rem;
-      color: var(--blue);
-      flex-shrink: 0;
-      position: relative;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+    .modal-btn.cancel { background: var(--bg); border: 1.5px solid var(--separator); color: var(--text); }
+    .modal-btn.confirm { background: #FF3B30; border: 1.5px solid #FF3B30; color: #fff; }
+    .modal-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .modal-btn:active { transform: translateY(-1px); }
     .avatar.selected {
       background: var(--navy);
       color: var(--white);
@@ -374,6 +438,77 @@
     .icebreaker-btn { width: 100%; background: var(--blue); color: var(--white); font-family: 'Syne', sans-serif; font-weight: 700; padding: 14px; border-radius: 100px; border: none; cursor: pointer; }
     
     @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── PROFILE SETUP OVERLAY ─────────────── */
+    .profile-setup-overlay {
+      position: fixed; inset: 0; background: var(--white); z-index: 100;
+      display: none; flex-direction: column; padding: 40px 32px;
+      overflow-y: auto;
+    }
+    .profile-setup-overlay.visible { display: flex; }
+    .setup-title { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+    .setup-sub { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.5; }
+    .setup-label { font-weight: 700; font-size: 0.85rem; color: var(--text); margin-bottom: 8px; display: block; }
+    .setup-input {
+      width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--separator);
+      background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 1rem; margin-bottom: 20px; outline: none;
+    }
+    .setup-input:focus { border-color: var(--blue-mid); }
+    .setup-btn {
+      background: var(--blue); color: var(--white); border: none; padding: 18px;
+      border-radius: 100px; font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer; margin-top: 12px; box-shadow: 0 8px 24px rgba(26, 86, 255, 0.25);
+    }
+
+    /* ─── PROFILE TAB ───────────────────────── */
+    .profile-container { padding: 24px; }
+    .profile-card {
+      background: var(--white); border-radius: 20px; padding: 24px;
+      border: 1px solid var(--separator); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      margin-bottom: 24px;
+    }
+    .profile-avatar-large {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-light), var(--blue-mid));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem;
+      color: var(--blue); margin: 0 auto 16px;
+    }
+    .profile-username { text-align: center; font-weight: 700; font-size: 1.1rem; color: var(--navy); margin-bottom: 24px; }
+    .profile-edit-group { margin-bottom: 16px; }
+    .profile-save-btn {
+      width: 100%; padding: 14px; border-radius: 100px;
+      background: var(--navy); color: var(--white); border: none;
+      font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer;
+    }
+
+    /* ─── TOAST NOTIFICATIONS ───────────────── */
+    #toast-container {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 1000;
+      pointer-events: none; width: calc(100% - 40px); max-width: 400px;
+    }
+    .toast {
+      background: rgba(28, 31, 110, 0.9); backdrop-filter: blur(8px);
+      color: white; padding: 12px 20px; border-radius: 100px;
+      font-size: 0.88rem; font-weight: 600; text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      animation: toast-in-out 3s ease forwards;
+      pointer-events: auto; border: 1px solid rgba(255,255,255,0.1);
+    }
+    @keyframes toast-in-out {
+      0% { opacity: 0; transform: translateY(20px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+
+    #profile-success-msg {
+      color: #00C853; font-weight: 700; font-size: 0.85rem;
+      text-align: center; margin-top: 12px; display: none;
+      animation: fade-in 0.3s ease;
+    }
+
   </style>
 </head>
 
@@ -436,15 +571,38 @@
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
       <span class="nav-label">Friends</span>
     </div>
+    <div class="nav-item" onclick="switchTab('search')" id="nav-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span class="nav-label">Search</span>
+    </div>
     <div class="nav-item">
       <svg viewBox="0 0 24 24"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg>
       <span class="nav-label">Nearby</span>
     </div>
-    <div class="nav-item">
+    <div class="nav-item" onclick="switchTab('profile')" id="nav-profile">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span class="nav-label">Profile</span>
     </div>
   </nav>
+
+  <div id="toast-container"></div>
+
+  <!-- PROFILE SETUP OVERLAY -->
+  <div class="profile-setup-overlay" id="profile-setup-overlay">
+    <div class="setup-title">Welcome to HiFive! 🤚</div>
+    <div class="setup-sub">Let's set up your profile so friends can find you.</div>
+    
+    <label class="setup-label">FIRST NAME</label>
+    <input type="text" id="setup-firstname" class="setup-input" placeholder="e.g. Alex" />
+    
+    <label class="setup-label">LAST NAME</label>
+    <input type="text" id="setup-lastname" class="setup-input" placeholder="e.g. Smith" />
+    
+    <label class="setup-label">YOUR HOBBIES</label>
+    <input type="text" id="setup-hobbies" class="setup-input" placeholder="e.g. Surfing, Coding, Music..." />
+    
+    <button class="setup-btn" onclick="saveInitialProfile()">Start High-Fiving!</button>
+  </div>
 
   <script>
     const API_BASE = window.location.origin;
@@ -458,114 +616,46 @@
     let people = [];
     let friendsData = { friends: [], pendingSent: [], pendingReceived: [] };
     const selected = new Set();
+    let currentTab = 'friends';
 
-    async function fetchFriends() {
-      try {
-        const res = await fetch(`${API_BASE}/api/friends`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          friendsData = await res.json();
-          renderInviteList();
-        }
-      } catch(err) { console.error('Error fetching friends:', err); }
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     }
 
-    async function sendFriendRequest(targetId) {
-      document.body.style.cursor = 'wait';
-      await fetch(`${API_BASE}/api/friends/request`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-         body: JSON.stringify({ targetUserId: targetId })
-      });
-      document.body.style.cursor = 'default';
-      fetchFriends();
-    }
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById(`tab-${tab}`);
+      if (activeTab) activeTab.classList.add('active');
+      
+      // Update bottom nav active state
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const activeNav = document.getElementById(`nav-${tab}`) || (tab === 'friends' ? document.querySelector('.bottom-nav .nav-item:nth-child(2)') : null);
+      if (activeNav) activeNav.classList.add('active');
 
-    async function acceptFriendRequest(requestId, personObj) {
-       document.body.style.cursor = 'wait';
-       await fetch(`${API_BASE}/api/friends/accept`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-         body: JSON.stringify({ requestId })
-       });
-       document.body.style.cursor = 'default';
-       await fetchFriends();
-       if (personObj) openChat(personObj);
-    }
-
-    async function declineFriendRequest(requestId) {
-       document.body.style.cursor = 'wait';
-       await fetch(`${API_BASE}/api/friends/decline`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-         body: JSON.stringify({ requestId })
-       });
-       document.body.style.cursor = 'default';
-       fetchFriends();
-    }
-
-    async function unfriend(targetId) {
-      if (!confirm('Remove this friend? This will end your friendship and delete your chat history.')) return;
-      document.body.style.cursor = 'wait';
-      await fetch(`${API_BASE}/api/friends/unfriend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ targetUserId: targetId })
-      });
-      document.body.style.cursor = 'default';
-      fetchFriends();
-    }
-
-    async function fetchUsers(query = '') {
-      try {
-        const res = await fetch(`${API_BASE}/api/users/search?q=${encodeURIComponent(query)}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.status === 401 || res.status === 403) throw new Error('Unauth');
-        
-        const data = await res.json();
-        people = data.map(u => ({ id: u.id, name: u.username }));
-        renderInviteList();
-      } catch(err) {
-        if (err.message === 'Unauth') {
-           localStorage.removeItem('chatToken');
-           localStorage.removeItem('chatUsername');
-           window.location.href = 'hifive.html';
-        }
-      }
-    }
-
-    // Live search binding
-    document.getElementById('live-search').addEventListener('input', (e) => {
-      fetchUsers(e.target.value.trim()).then(() => renderInviteList());
-    });
-
-    function getInitials(name) {
-      return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    }
-
-    function groupByLetter(arr) {
-      const groups = {};
-      arr.forEach(p => {
-        const letter = p.name[0].toUpperCase();
-        if (!groups[letter]) groups[letter] = [];
-        groups[letter].push(p);
-      });
-      return groups;
-    }
-
-    function toggleSelect(name, avatarEl, rowEl) {
-      if (selected.has(name)) {
-        selected.delete(name);
-        avatarEl.classList.remove('selected');
-        rowEl.classList.remove('row-selected');
+      const searchInput = document.getElementById('live-search');
+      if (tab === 'search') {
+        searchInput.classList.remove('search-hidden');
+        searchInput.focus();
       } else {
-        selected.add(name);
-        avatarEl.classList.add('selected');
-        rowEl.classList.add('row-selected');
+        searchInput.classList.add('search-hidden');
       }
-      updateSendBar();
+
+      const listArea = document.getElementById('people-list');
+      listArea.innerHTML = '';
+      const alphaBar = document.getElementById('alpha-bar');
+      if (alphaBar) alphaBar.innerHTML = '';
+
+      if (tab === 'friends' || tab === 'requests' || tab === 'search') {
+        renderInviteList();
+      } else if (tab === 'profile') {
+        renderProfileTab();
+      }
     }
 
     function updateSendBar() {
@@ -581,34 +671,15 @@
       }
     }
 
-    let currentTab = 'friends';
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('tab-' + tabId).classList.add('active');
-      currentTab = tabId;
-
-      const searchInput = document.getElementById('live-search');
-      if (tabId === 'search') {
-        searchInput.classList.remove('search-hidden');
-        searchInput.focus();
-        fetchUsers(searchInput.value.trim());
-      } else {
-        searchInput.classList.add('search-hidden');
-        searchInput.value = '';
-        renderInviteList();
-      }
-    }
-
     function renderInviteList() {
       const list = document.getElementById('people-list');
       list.innerHTML = '';
       
       let renderList = [];
       if (currentTab === 'friends') {
-          renderList = (friendsData?.friends || []).map(u => ({ id: u.id, name: u.username || u.name }));
+          renderList = (friendsData?.friends || []).map(u => ({ id: u.id, name: u.username || u.name, isOnline: u.isOnline }));
       } else if (currentTab === 'requests') {
-          renderList = (friendsData?.pendingReceived || []).map(r => ({ id: r.user.id, name: r.user.username || r.user.name, requestId: r.requestId }));
+          renderList = (friendsData?.pendingReceived || []).map(r => ({ id: r.user.id, name: r.user.username || r.user.name, requestId: r.requestId, isOnline: r.user.isOnline }));
       } else if (currentTab === 'search') {
           renderList = people;
       }
@@ -633,6 +704,7 @@
             avatar.className = 'avatar' + (selected.has(person.name) ? ' selected' : '');
             avatar.innerHTML = `
               <span class="avatar-initials">${getInitials(person.name)}</span>
+              <div class="status-dot ${person.isOnline ? 'status-online' : 'status-offline'}"></div>
               <span class="avatar-check">✓</span>
             `;
             avatar.addEventListener('click', () => toggleSelect(person.name, avatar, row));
@@ -730,11 +802,6 @@
             row.appendChild(btn);
             list.appendChild(row);
           } catch(err) {
-            const errorRow = document.createElement('div');
-            errorRow.style.color = 'red';
-            errorRow.style.padding = '10px';
-            errorRow.textContent = "RENDER CRASH: " + err.message;
-            list.appendChild(errorRow);
             console.error(err);
           }
         });
@@ -742,18 +809,316 @@
 
       // Build alpha sidebar
       const alphaBar = document.getElementById('alpha-bar');
-      alphaBar.innerHTML = '';
-      letters.forEach(letter => {
-        const span = document.createElement('span');
-        span.className = 'alpha-char';
-        span.textContent = letter;
-        span.addEventListener('click', () => {
-          const section = document.getElementById('section-' + letter);
-          if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (alphaBar) {
+        alphaBar.innerHTML = '';
+        letters.forEach(letter => {
+          const span = document.createElement('span');
+          span.className = 'alpha-char';
+          span.textContent = letter;
+          span.addEventListener('click', () => {
+            const section = document.getElementById('section-' + letter);
+            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          alphaBar.appendChild(span);
         });
-        alphaBar.appendChild(span);
+      }
+    }
+
+    async function fetchFriends() {
+      try {
+        const res = await fetch(`${API_BASE}/api/friends`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          friendsData = await res.json();
+          renderInviteList();
+        }
+      } catch(err) { console.error('Error fetching friends:', err); }
+    }
+
+    async function sendFriendRequest(targetId) {
+      document.body.style.cursor = 'wait';
+      await fetch(`${API_BASE}/api/friends/request`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+         body: JSON.stringify({ targetUserId: targetId })
+      });
+      document.body.style.cursor = 'default';
+      fetchFriends();
+    }
+
+    async function acceptFriendRequest(requestId, personObj) {
+       document.body.style.cursor = 'wait';
+       await fetch(`${API_BASE}/api/friends/accept`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+         body: JSON.stringify({ requestId })
+       });
+       document.body.style.cursor = 'default';
+       await fetchFriends();
+       if (personObj) openChat(personObj);
+    }
+
+    async function declineFriendRequest(requestId) {
+       document.body.style.cursor = 'wait';
+       await fetch(`${API_BASE}/api/friends/decline`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+         body: JSON.stringify({ requestId })
+       });
+       document.body.style.cursor = 'default';
+       fetchFriends();
+    }
+
+    async function unfriend(targetId) {
+      showConfirmModal({
+        title: 'Remove Friend?',
+        message: 'Are you sure you want to remove this friend? This will end your friendship and delete your chat history.',
+        icon: '👤',
+        confirmText: 'Remove Friend',
+        onConfirm: async () => {
+          document.body.style.cursor = 'wait';
+          try {
+            await fetch(`${API_BASE}/api/friends/unfriend`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ targetUserId: targetId })
+            });
+            fetchFriends();
+          } finally {
+            document.body.style.cursor = 'default';
+          }
+        }
       });
     }
+
+    async function fetchUsers(query = '') {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/search?q=${encodeURIComponent(query)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) throw new Error('Unauth');
+        
+        const data = await res.json();
+        people = data.map(u => ({ 
+          id: u.id, 
+          name: u.username, 
+          firstName: u.firstName, 
+          lastName: u.lastName, 
+          isOnline: u.isOnline 
+        }));
+        renderInviteList();
+      } catch(err) {
+        if (err.message === 'Unauth') {
+           localStorage.removeItem('chatToken');
+           localStorage.removeItem('chatUsername');
+           window.location.href = 'hifive.html';
+        }
+      }
+    }
+
+    // Live search binding
+    document.getElementById('live-search').addEventListener('input', (e) => {
+      fetchUsers(e.target.value.trim()).then(() => renderInviteList());
+    });
+
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function groupByLetter(arr) {
+      const groups = {};
+      arr.forEach(p => {
+        const letter = p.name[0].toUpperCase();
+        if (!groups[letter]) groups[letter] = [];
+        groups[letter].push(p);
+      });
+      return groups;
+    }
+
+    function toggleSelect(name, avatarEl, rowEl) {
+      if (selected.has(name)) {
+        selected.delete(name);
+        avatarEl.classList.remove('selected');
+        rowEl.classList.remove('row-selected');
+      } else {
+        selected.add(name);
+        avatarEl.classList.add('selected');
+        rowEl.classList.add('row-selected');
+      }
+      updateSendBar();
+    }
+
+    async function checkProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          if (!profile.firstName || !profile.lastName) {
+            document.getElementById('profile-setup-overlay').classList.add('visible');
+          }
+        }
+      } catch (err) { console.error('checkProfile error:', err); }
+    }
+
+    async function saveInitialProfile() {
+      const firstName = document.getElementById('setup-firstname').value.trim();
+      const lastName = document.getElementById('setup-lastname').value.trim();
+      const hobbies = document.getElementById('setup-hobbies').value.trim();
+
+      if (!firstName || !lastName) return showToast('Please enter your name!');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/profile`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ firstName, lastName, hobbies })
+        });
+        if (res.ok) {
+          document.getElementById('profile-setup-overlay').classList.remove('visible');
+          showToast('Profile setup complete! 🤚');
+        } else {
+          showToast('Failed to save profile. Try again.');
+        }
+      } catch (err) {
+        showToast('Error saving profile.');
+      } finally {
+        isUpdatingProfile = false;
+      }
+    }
+
+    async function deleteAccountRequest() {
+      showConfirmModal({
+        title: 'Delete Account?',
+        message: 'Are you absolutely sure you want to delete your account? This action is permanent and all your messages and profile data will be lost forever.',
+        icon: '🗑️',
+        confirmText: 'Delete Permanently',
+        onConfirm: async () => {
+          try {
+            const res = await fetch(`${API_BASE}/api/users/profile`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (res.ok) {
+              showToast('Account deleted. Goodbye! 👋');
+              setTimeout(() => {
+                localStorage.clear();
+                window.location.reload();
+              }, 2000);
+            } else {
+              showToast('Failed to delete account.');
+            }
+          } catch (err) {
+            showToast('Error deleting account.');
+          }
+        }
+      });
+    }
+
+    function showConfirmModal({ title, message, icon, confirmText, onConfirm }) {
+      const overlay = document.getElementById('custom-modal-overlay');
+      document.getElementById('modal-title').textContent = title || 'Are you sure?';
+      document.getElementById('modal-message').textContent = message || '';
+      document.getElementById('modal-icon').textContent = icon || '⚠️';
+      const confirmBtn = document.getElementById('modal-confirm');
+      const cancelBtn = document.getElementById('modal-cancel');
+      confirmBtn.textContent = confirmText || 'Confirm';
+      
+      overlay.classList.add('visible');
+      
+      const cleanup = () => {
+        overlay.classList.remove('visible');
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+      
+      confirmBtn.onclick = () => {
+        cleanup();
+        if (onConfirm) onConfirm();
+      };
+      
+      cancelBtn.onclick = () => {
+        cleanup();
+      };
+    }
+
+    async function renderProfileTab() {
+      const list = document.getElementById('people-list');
+      list.innerHTML = '<div style="padding:40px; text-align:center;">Loading profile...</div>';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const profile = await res.json();
+
+        const initials = (profile.firstName?.[0] || '') + (profile.lastName?.[0] || '') || profile.username[0].toUpperCase();
+
+        list.innerHTML = `
+          <div class="profile-container">
+            <div class="profile-card">
+              <div class="profile-avatar-large">${initials}</div>
+              <div class="profile-username">@${profile.username}</div>
+
+              <div class="profile-edit-group">
+                <label class="setup-label">FIRST NAME</label>
+                <input type="text" id="edit-firstName" class="setup-input" value="${profile.firstName || ''}" />
+              </div>
+
+              <div class="profile-edit-group">
+                <label class="setup-label">LAST NAME</label>
+                <input type="text" id="edit-lastName" class="setup-input" value="${profile.lastName || ''}" />
+              </div>
+
+              <div class="profile-edit-group">
+                <label class="setup-label">HOBBIES</label>
+                <input type="text" id="edit-hobbies" class="setup-input" value="${profile.hobbies || ''}" />
+              </div>
+
+              <button class="profile-save-btn" onclick="saveProfileUpdate()">Update Profile</button>
+              <div id="profile-success-msg">Profile updated successfully! ✨</div>
+            </div>
+
+            <button onclick="localStorage.clear(); window.location.reload();" style="width:100%; padding:14px; border-radius:100px; background:var(--bg); border:1px solid var(--separator); color:var(--text-muted); font-family:'Syne',sans-serif; font-weight:700; cursor:pointer;">Logout</button>
+            <button onclick="deleteAccountRequest()" style="width:100%; padding:14px; border-radius:100px; background:transparent; border:1px solid #FF3B30; color:#FF3B30; font-family:'Syne',sans-serif; font-weight:700; cursor:pointer; margin-top:12px;">Delete Account</button>
+          </div>
+        `;
+      } catch (err) {
+        list.innerHTML = '<div style="padding:40px; text-align:center; color:red;">Failed to load profile.</div>';
+      }
+    }
+
+    async function saveProfileUpdate() {
+      const firstName = document.getElementById('edit-firstName').value.trim();
+      const lastName = document.getElementById('edit-lastName').value.trim();
+      const hobbies = document.getElementById('edit-hobbies').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/profile`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, hobbies })
+        });
+        if (res.ok) {
+          await renderProfileTab(); // Re-render first to show updated values
+          const successMsg = document.getElementById('profile-success-msg');
+          if (successMsg) {
+            successMsg.style.display = 'block';
+            setTimeout(() => { if (successMsg) successMsg.style.display = 'none'; }, 3000);
+          }
+        }
+      } catch (err) { showToast('Error updating profile.'); }
+    }
+
+
+
+
 
     function renderEmptyTab(icon, title, sub) {
       const list = document.getElementById('people-list');
@@ -771,7 +1136,7 @@
 
     function sendInvites() {
       const names = [...selected];
-      alert(`HiFive sent to: ${names.join(', ')} 🤚`);
+      showToast(`HiFive sent to: ${names.join(', ')} 🤚`);
       selected.clear();
       renderInviteList();
       updateSendBar();
@@ -864,6 +1229,27 @@
         }
       });
 
+      // Handle user deletion in real-time
+      socket.on('user_deleted', ({ userId }) => {
+        // Remove from search results
+        people = people.filter(p => p.id !== userId);
+        // Remove from friend data
+        if (friendsData) {
+          if (friendsData.friends) friendsData.friends = friendsData.friends.filter(f => f.id !== userId);
+          if (friendsData.pendingSent) friendsData.pendingSent = friendsData.pendingSent.filter(f => f.user?.id !== userId);
+          if (friendsData.pendingReceived) friendsData.pendingReceived = friendsData.pendingReceived.filter(f => f.user?.id !== userId);
+        }
+        // Re-render if necessary
+        if (['friends', 'search', 'requests'].includes(currentTab)) {
+          renderInviteList();
+        }
+        // If chatting with deleted user, close it
+        if (activePartner && activePartner.id === userId) {
+          closeChat();
+          showToast('User account was deleted.');
+        }
+      });
+
       // Friend removed — update Friends tab on both sides in real-time
       socket.on('friend_removed', (data) => {
         const { removedUserId } = data;
@@ -875,7 +1261,7 @@
           document.getElementById('chat-pane').classList.remove('open');
           activePartner = null;
           activeConversation = null;
-          alert('This user has unfriended you. The chat is now closed.');
+          showToast('This user has unfriended you. The chat is now closed.');
         }
       });
     }
@@ -933,7 +1319,12 @@
         // Generate Icebreaker
         pane.innerHTML = '<div style="text-align:center; margin-top: 40px; color: var(--blue); font-weight: 600;">✨ Generating AI Icebreaker...</div>';
         
-        fetch(`${API_BASE}/api/ai/icebreaker`, { headers: { 'Authorization': `Bearer ${token}` } })
+        if (!activeConversation) {
+          console.warn('Cannot fetch icebreaker: activeConversation is null');
+          return;
+        }
+        
+        fetch(`${API_BASE}/api/ai/icebreaker?conversationId=${activeConversation}`, { headers: { 'Authorization': `Bearer ${token}` } })
           .then(r => r.json())
           .then(data => {
             const q = data.question || "If you could have any superpower, what would it be?";
@@ -1033,11 +1424,25 @@
     });
 
     // ── Init ──────────────────────────────────
+    checkProfile();
     fetchUsers().then(() => fetchFriends()).then(() => {
       switchTab('friends');
     });
     // Connect socket immediately so we receive friend request notifications
     initSocket();
   </script>
+  <!-- Custom Confirmation Modal -->
+  <div id="custom-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <div id="modal-icon" class="modal-icon">⚠️</div>
+      <h3 id="modal-title" class="modal-title">Are you sure?</h3>
+      <p id="modal-message" class="modal-message">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="modal-btn cancel">Cancel</button>
+        <button id="modal-confirm" class="modal-btn confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

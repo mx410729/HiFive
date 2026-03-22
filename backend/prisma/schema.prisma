@@ -11,6 +11,11 @@ model User {
   id               String          @id @default(uuid())
   username         String          @unique
   passwordHash     String
+  firstName        String?
+  lastName         String?
+  hobbies          String?
+  isOnline         Boolean         @default(false)
+  lastSeen         DateTime?
   createdAt        DateTime        @default(now())
   messages         Message[]
   participantOf    Participant[]
@@ -21,9 +26,9 @@ model User {
 model FriendRequest {
   id         String   @id @default(uuid())
   senderId   String
-  sender     User     @relation("SentRequests", fields: [senderId], references: [id])
+  sender     User     @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
-  receiver   User     @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  receiver   User     @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
   status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
   createdAt  DateTime @default(now())
 
@@ -44,7 +49,7 @@ model Participant {
   joinedAt       DateTime     @default(now())
   
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
 }
@@ -58,5 +63,5 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   
   senderId       String?
-  sender         User?        @relation(fields: [senderId], references: [id])
+  sender         User?        @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

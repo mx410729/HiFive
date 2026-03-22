@@ -483,13 +483,16 @@
       <p class="modal-tagline" id="modal-tagline">Welcome back.</p>
 
       <form id="sql-auth-form" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-        <input type="text" id="auth-username" placeholder="Username" required style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
-        <input type="password" id="auth-password" placeholder="Password" required style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
+        <input type="text" id="auth-username" name="username" autocomplete="username" placeholder="Username" required style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
+        <input type="password" id="auth-password" name="password" autocomplete="current-password" placeholder="Password" required style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
         <button type="submit" class="auth-submit" id="sql-submit-btn">Continue</button>
         <div id="auth-error" style="color: #ff4d4f; font-size: 0.85rem; text-align: center; margin-top: -4px;"></div>
       </form>
 
-      <p class="auth-footer-text" style="margin-top:16px;">By continuing you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>.</p>
+      <p class="auth-footer-text" style="margin-top:16px;" id="auth-toggle-text">
+        Already have an account? <a href="#" id="auth-toggle-link">Log in</a>
+      </p>
+      <p class="auth-footer-text" style="font-size: 0.75rem; margin-top: 12px; opacity: 0.6;">By continuing you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>.</p>
     </div>
   </div>
 
@@ -516,19 +519,12 @@
       const userDiv    = document.getElementById('nav-user');
 
       if (token && username) {
-        loginBtn.style.display  = 'none';
-        userDiv.style.display   = 'flex';
-        document.getElementById('nav-username').textContent = username;
-        
-        // Dynamically update CTA buttons to point to Dashboard
-        const heroBtn = document.getElementById('hero-signup-btn');
-        const ctaBtn = document.getElementById('cta-signup-btn');
-        if (heroBtn) heroBtn.textContent = 'Go to Dashboard →';
-        if (ctaBtn) ctaBtn.textContent = 'Go to Dashboard →';
-      } else {
-        loginBtn.style.display = 'block';
-        userDiv.style.display  = 'none';
+        window.location.href = 'dashboard.html';
+        return;
       }
+      
+      loginBtn.style.display = 'block';
+      userDiv.style.display  = 'none';
     }
 
     async function submitAuthForm(e) {
@@ -586,13 +582,31 @@
         return;
       }
       isSignupMode = isSignup;
-      document.getElementById('modal-tagline').textContent = isSignup ? 'Create your account.' : 'Welcome back.';
-      document.getElementById('auth-username').value = '';
-      document.getElementById('auth-password').value = '';
-      document.getElementById('auth-error').textContent = '';
-      
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
+      updateModalMode();
+    }
+
+    function updateModalMode() {
+      const tagline = document.getElementById('modal-tagline');
+      const toggleText = document.getElementById('auth-toggle-text');
+      const submitBtn = document.getElementById('sql-submit-btn');
+      
+      if (isSignupMode) {
+        tagline.textContent = 'Create your account.';
+        submitBtn.textContent = 'Sign up';
+        toggleText.innerHTML = 'Already have an account? <a href="#" id="auth-toggle-link">Log in</a>';
+      } else {
+        tagline.textContent = 'Welcome back.';
+        submitBtn.textContent = 'Log in';
+        toggleText.innerHTML = 'Don\'t have an account? <a href="#" id="auth-toggle-link">Sign up</a>';
+      }
+      
+      document.getElementById('auth-toggle-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        isSignupMode = !isSignupMode;
+        updateModalMode();
+      });
     }
 
     function closeModal() {
