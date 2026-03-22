@@ -1333,25 +1333,51 @@
     <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
   </footer>
 
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
   <script>
-    // ── Express API SQL Auth ───────────────────────────────────────
-    const API_BASE = window.location.origin;
-    let isSignupMode = false;
+    // ── Auth0 configuration ─────────────────────────────────────────
+    const AUTH0_DOMAIN    = 'dev-gnf25xr2lt37ohtu.us.auth0.com';
+    const AUTH0_CLIENT_ID = 'pOTTptqjjjExXAGuHaFXExOaVjgiWa4U';
+    const API_BASE        = 'http://localhost:8080'; // Update this to your cloud URL later
 
-    function initAuth() {
+    let auth0Client = null;
+
+    async function initAuth() {
+      auth0Client = await auth0.createAuth0Client({
+        domain: AUTH0_DOMAIN,
+        clientId: AUTH0_CLIENT_ID,
+        authorizationParams: { 
+          redirect_uri: window.location.origin + window.location.pathname,
+          audience: 'https://hifive-api' 
+        }
+      });
+
+      // Handle redirect back from Auth0
+      if (location.search.includes('code=') || location.search.includes('error=')) {
+        await auth0Client.handleRedirectCallback();
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // After login, we can redirect to dashboard or sync profile
+        window.location.href = 'dashboard.html';
+      }
+
       updateUI();
     }
 
-    function updateUI() {
-      const token = localStorage.getItem('chatToken');
-      const username = localStorage.getItem('chatUsername');
-      const loginBtn = document.getElementById('nav-login-btn');
-      const userDiv = document.getElementById('nav-user');
+    async function updateUI() {
+      const isLoggedIn = await auth0Client.isAuthenticated();
+      const loginBtn   = document.getElementById('nav-login-btn');
+      const userDiv    = document.getElementById('nav-user');
 
-      if (token && username) {
-        loginBtn.style.display = 'none';
-        userDiv.style.display = 'flex';
-        document.getElementById('nav-username').textContent = username;
+      if (isLoggedIn) {
+        const user = await auth0Client.getUser();
+        loginBtn.style.display  = 'none';
+        userDiv.style.display   = 'flex';
+        document.getElementById('nav-username').textContent = user.nickname || user.name || user.email;
+        if (user.picture) {
+          const avatar = document.getElementById('nav-avatar');
+          if (avatar) avatar.src = user.picture;
+        }
 
         // Update the hero/cta buttons to point to the dashboard
         const heroBtn = document.getElementById('hero-signup-btn');
@@ -1362,94 +1388,39 @@
 
         const ctaLogin = document.getElementById('cta-login-btn');
         if (ctaLogin) ctaLogin.style.display = 'none';
-
-        return;
+      } else {
+        loginBtn.style.display = 'block';
+        userDiv.style.display  = 'none';
       }
-
-      loginBtn.style.display = 'block';
-      userDiv.style.display = 'none';
     }
 
-    async function submitAuthForm(e) {
-      e.preventDefault();
-      const user = document.getElementById('auth-username').value.trim();
-      const pass = document.getElementById('auth-password').value.trim();
-      const errorDiv = document.getElementById('auth-error');
-      errorDiv.textContent = '';
-
-      const endpoint = isSignupMode ? '/api/auth/register' : '/api/auth/login';
-      const btn = document.getElementById('sql-submit-btn');
-
-      try {
-        btn.textContent = 'Loading...';
-        btn.disabled = true;
-
-        const res = await fetch(`${API_BASE}${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: user, password: pass })
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Authentication failed');
+    async function login(hint) {
+      closeModal();
+      await auth0Client.loginWithRedirect({
+        authorizationParams: {
+          redirect_uri: window.location.origin + window.location.pathname,
+          ...(hint ? { connection: hint } : {})
         }
-
-        localStorage.setItem('chatToken', data.token);
-        localStorage.setItem('chatUsername', user); // Decoding JWT would be better, but quick save
-
-        updateUI();
-        closeModal();
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        errorDiv.textContent = err.message;
-      } finally {
-        btn.textContent = 'Continue';
-        btn.disabled = false;
-      }
+      });
     }
 
-    function logout() {
-      localStorage.removeItem('chatToken');
-      localStorage.removeItem('chatUsername');
-      window.location.href = '/';
+    async function logout() {
+      await auth0Client.logout({
+        logoutParams: { returnTo: window.location.origin + window.location.pathname }
+      });
     }
 
     // ── Modal ──────────────────────────────────────────────
     const modal = document.getElementById('auth-modal');
-    const authForm = document.getElementById('sql-auth-form');
 
     function openModal(isSignup = false) {
-      if (localStorage.getItem('chatToken')) {
+      if (document.getElementById('nav-user').style.display === 'flex') {
         window.location.href = 'dashboard.html';
         return;
       }
-      isSignupMode = isSignup;
+      document.getElementById('modal-tagline').textContent = isSignup ? 'Create your account.' : 'Welcome back.';
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
-      updateModalMode();
-    }
-
-    function updateModalMode() {
-      const tagline = document.getElementById('modal-tagline');
-      const toggleText = document.getElementById('auth-toggle-text');
-      const submitBtn = document.getElementById('sql-submit-btn');
-
-      if (isSignupMode) {
-        tagline.textContent = 'Create your account.';
-        submitBtn.textContent = 'Sign up';
-        toggleText.innerHTML = 'Already have an account? <a href="#" id="auth-toggle-link">Log in</a>';
-      } else {
-        tagline.textContent = 'Welcome back.';
-        submitBtn.textContent = 'Log in';
-        toggleText.innerHTML = 'Don\'t have an account? <a href="#" id="auth-toggle-link">Sign up</a>';
-      }
-
-      document.getElementById('auth-toggle-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        isSignupMode = !isSignupMode;
-        updateModalMode();
-      });
     }
 
     function closeModal() {
@@ -1465,8 +1436,10 @@
     document.getElementById('modal-close').addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
-    // Submit Hook
-    authForm.addEventListener('submit', submitAuthForm);
+    // Auth buttons inside modal
+    document.getElementById('google-btn').addEventListener('click',      () => login('google-oauth2'));
+    document.getElementById('apple-btn').addEventListener('click',       () => login('apple'));
+    document.getElementById('email-login-btn').addEventListener('click', () => login());
 
     // Logout
     document.getElementById('nav-logout-btn').addEventListener('click', logout);

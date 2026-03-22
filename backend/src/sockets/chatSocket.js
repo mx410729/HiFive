@@ -1,21 +1,64 @@
 const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 const { PrismaClient } = require('@prisma/client');
 const env = require('../config/env');
 
 const prisma = new PrismaClient();
 
+const client = jwksClient({
+  jwksUri: `${process.env.AUTH0_ISSUER || env.AUTH0_ISSUER}.well-known/jwks.json`
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function(err, key) {
+    if (err) return callback(err);
+    const signingKey = key.getPublicKey();
+    callback(null, signingKey);
+  });
+}
+
 // In-memory icebreaker state: conversationId -> { question: string, answers: { userId: { username, answer } } }
 const icebreakerAnswers = new Map();
 
 module.exports = (io) => {
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error('Authentication error'));
     
-    jwt.verify(token, env.JWT_SECRET, (err, decoded) => {
-      if (err) return next(new Error('Authentication error'));
-      socket.user = decoded;
-      next();
+    jwt.verify(token, getKey, {
+      audience: process.env.AUTH0_AUDIENCE || env.AUTH0_AUDIENCE,
+      issuer: process.env.AUTH0_ISSUER || env.AUTH0_ISSUER,
+      algorithms: ['RS256']
+    }, async (err, decoded) => {
+      if (err) {
+        console.error('Socket Auth Error:', err);
+        return next(new Error('Authentication error'));
+      }
+
+      // Sync user with Prisma
+      try {
+        const auth0Id = decoded.sub;
+        let user = await prisma.user.findUnique({ where: { auth0Id } });
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              auth0Id,
+              username: `user_${auth0Id.slice(-8)}`,
+              isOnline: true,
+              lastSeen: new Date()
+            }
+          });
+        }
+        socket.user = { 
+          userId: user.id, 
+          auth0Id: user.auth0Id, 
+          username: user.username 
+        };
+        next();
+      } catch (prismaErr) {
+        console.error('Socket User Sync Error:', prismaErr);
+        next(new Error('Internal server error during user synchronization'));
+      }
     });
   });
 

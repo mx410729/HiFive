@@ -14,22 +14,23 @@ app.use(cors());
 app.use(express.json());
 
 const path = require('path');
-const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const aiRoutes = require('./routes/ai');
 const userRoutes = require('./routes/users');
+const friendsRoutes = require('./routes/friends');
 const chatSocket = require('./sockets/chatSocket');
+const { checkJwt, syncUser } = require('./middlewares/authMiddleware');
 
 // Serve the static frontend HTML files
 app.use(express.static(path.join(__dirname, '../../')));
 
 // The root route / now automatically serves index.html via express.static
 
-app.use('/api/auth', authRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/friends', require('./routes/friends'));
+// Protect all API routes with Auth0 middleware
+app.use('/api/chat', checkJwt, syncUser, chatRoutes);
+app.use('/api/ai', checkJwt, syncUser, aiRoutes);
+app.use('/api/users', checkJwt, syncUser, userRoutes);
+app.use('/api/friends', checkJwt, syncUser, friendsRoutes);
 
 // Initialize Socket.IO (In-memory for local SQLite dev)
 const io = new Server(server, {

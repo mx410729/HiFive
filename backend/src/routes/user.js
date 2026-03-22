@@ -20,10 +20,10 @@ router.post('/profile', async (req, res) => {
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (auth0_id) 
             DO UPDATE SET 
-                first_name = EXCLUDED.first_name,
-                last_name = EXCLUDED.last_name,
-                interests = EXCLUDED.interests,
-                last_ping_time = CURRENT_TIMESTAMP
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            interests = EXCLUDED.interests,
+            last_ping_time = CURRENT_TIMESTAMP
             RETURNING *;
         `;
         const result = await db.query(query, [auth0_id, first_name, last_name, interests]);

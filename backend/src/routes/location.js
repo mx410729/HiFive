@@ -27,7 +27,7 @@ router.post('/ping', async (req, res) => {
         const updateQuery = `
             UPDATE users 
             SET lat = $1, lng = $2, last_ping_time = CURRENT_TIMESTAMP
-            WHERE id = $3
+            WHERE auth0_id = $3
             RETURNING id;
         `;
         const userRes = await db.query(updateQuery, [lat, lng, userId]);
@@ -36,15 +36,17 @@ router.post('/ping', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        const numericUserId = userRes.rows[0].id;
+
         // 2. Get all recently active users
         const nearbyQuery = `
-            SELECT id, username, lat, lng 
+            SELECT id, auth0_id, first_name, lat, lng 
             FROM users 
             WHERE id != $1 
             AND last_ping_time > CURRENT_TIMESTAMP - INTERVAL '5 minutes'
             AND lat IS NOT NULL;
         `;
-        const allUsers = await db.query(nearbyQuery, [userId]);
+        const allUsers = await db.query(nearbyQuery, [numericUserId]);
 
         // 3. Filter to users within 50 meters using Haversine
         const nearbyUsers = allUsers.rows.filter(u =>
@@ -53,8 +55,8 @@ router.post('/ping', async (req, res) => {
 
         // 4. Log encounters for nearby users
         const updates = nearbyUsers.map(nearbyUser => {
-            const userA = Math.min(userId, nearbyUser.id);
-            const userB = Math.max(userId, nearbyUser.id);
+            const userA = Math.min(numericUserId, nearbyUser.id);
+            const userB = Math.max(numericUserId, nearbyUser.id);
 
             return db.query(`
                 INSERT INTO encounters (user_a_id, user_b_id, encounter_count, last_seen_date)
@@ -79,10 +81,10 @@ router.post('/ping', async (req, res) => {
 
         res.json({
             success: true,
-            passedBy: nearbyUsers.map(u => ({ id: u.id, username: u.username })),
+            passedBy: nearbyUsers.map(u => ({ id: u.auth0_id, first_name: u.first_name })),
             suggestions: suggestions.map(s => ({
-                id: s.user.id,
-                username: s.user.username,
+                id: s.user.auth0_id,
+                first_name: s.user.first_name,
                 encounterCount: s.count
             }))
         });

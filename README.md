@@ -60,26 +60,51 @@ When another HiFive user is within **10 meters** of you, you get the option to s
 
 ---
 
-## Tech Stack (Planned)
+## Tech Stack
 
-- **Frontend:** React Native (iOS + Android)
-- **Backend:** Node.js / Firebase
-- **AI:** Anthropic Claude API — generates personalized icebreaker questions from shared interest data
-- **Location:** iOS/Android native location APIs, geofencing for 10m proximity detection
-- **Auth:** OAuth / Apple Sign-In
+- **Frontend:** HTML/JS (Vanilla) - designed for high-fidelity web experience.
+- **Backend:** Node.js / Express
+- **Database:** PostgreSQL (with `pg` pool)
+- **Authentication:** Auth0 (JWT-based)
+- **AI:** Gemini 1.5 Flash — generates personalized icebreaker questions.
+- **Real-time:** Socket.IO for instant messaging and proximity alerts.
 
 ---
 
-## Why HiFive?
+## Deployment Instructions (DigitalOcean)
 
-Most social apps make it easier to stay online. HiFive makes it easier to go offline — together. By removing follower counts, surfacing shared interests, and building in a natural conversation endpoint, HiFive lowers every decision barrier between meeting someone new and actually becoming friends.
+### 1. Database Setup
+1. Create a **Managed Database** for PostgreSQL on DigitalOcean.
+2. In the "Connection Details", get the **Connection String** (DATABASE_URL).
+3. Run the `backend/src/schema.sql` against your database to set up the tables.
+
+### 2. App Platform / Droplet Setup
+1. Upload this repository to **GitHub**.
+2. Create a new **App** on DigitalOcean App Platform, linked to your GitHub repo.
+3. Configure the following **Environment Variables**:
+   - `PORT`: 3000 (standard)
+   - `DATABASE_URL`: Your PostgreSQL connection string.
+   - `AUTH0_AUDIENCE`: Your Auth0 API Identifier.
+   - `AUTH0_ISSUER`: Your Auth0 Domain (e.g., `https://dev-xxxx.us.auth0.com/`).
+   - `GEMINI_API_KEY`: Your Google Gemini API Key.
+4. Set the build/run commands:
+   - Build Command: `cd backend && npm install`
+   - Start Command: `cd backend && npm start`
+
+### 3. Auth0 Configuration
+1. Create an API in Auth0.
+2. Set the `Identifier` to match your `AUTH0_AUDIENCE`.
+3. In the "Permissions" tab, ensure no special scopes are required for basic access, or configure as needed.
 
 ---
 
 ## Status
 
-🚧 Early concept / active development
+✅ Backend framework migrated to PostgreSQL & Auth0  
+✅ Gemini AI integration complete  
+✅ Deployment-ready configuration  
 
 ---
 
 *Built with the belief that the best connections happen face to face.*
+

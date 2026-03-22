@@ -376,7 +376,7 @@
         <span class="success-icon">🤚</span>
         <h2>You're all set, <span id="success-name"></span>!</h2>
         <p>Your profile is saved. You're ready to start making real connections.</p>
-        <a href="hifive.html" class="home-btn">Go to HiFive →</a>
+        <a href="index.html" class="home-btn">Go to HiFive →</a>
       </div>
 
     </div>
@@ -394,7 +394,7 @@
       auth0Client = await auth0.createAuth0Client({
         domain: AUTH0_DOMAIN,
         clientId: AUTH0_CLIENT_ID,
-        authorizationParams: { redirect_uri: 'https://reese-pagtalunan.github.io/HackDuke2026/hifive.html', audience: 'https://hifive-api' }
+        authorizationParams: { redirect_uri: window.location.origin + '/index.html', audience: 'https://hifive-api' }
       });
 
       if (location.search.includes('code=') || location.search.includes('error=')) {
@@ -405,7 +405,7 @@
       const isLoggedIn = await auth0Client.isAuthenticated();
       if (!isLoggedIn) {
         // Not logged in — redirect to main page
-        window.location.href = 'hifive.html';
+        window.location.href = 'index.html';
         return;
       }
 
