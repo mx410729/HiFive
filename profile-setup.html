@@ -321,7 +321,7 @@
 
   <!-- NAV -->
   <nav>
-    <a href="/" class="nav-logo">Hi<span>Five</span> 🤚</a>
+    <a href="index.html" class="nav-logo">Hi<span>Five</span> 🤚</a>
     <span class="nav-step">Step 1 of 2 — Profile setup</span>
   </nav>
 
@@ -386,7 +386,7 @@
     // ── Auth0 config ───────────────────────────────────
     const AUTH0_DOMAIN    = 'dev-gnf25xr2lt37ohtu.us.auth0.com';
     const AUTH0_CLIENT_ID = 'pOTTptqjjjExXAGuHaFXExOaVjgiWa4U';
-    const API_BASE        = window.location.origin;
+    const API_BASE        = '';
 
     let auth0Client = null;
     let currentUser = null;
@@ -408,7 +408,7 @@
 
       const isLoggedIn = await auth0Client.isAuthenticated();
       if (!isLoggedIn) {
-        window.location.href = '/';
+        window.location.href = 'index.html';
         return;
       }
 

@@ -19,24 +19,24 @@ const server = http.createServer(app);
 
 // Middlewares first
 app.use(cors({
-    origin: [
-        'https://reese-pagtalunan.github.io',
-        'http://localhost:5173'
-    ],
+    origin: '*', // Allow all for development/deployment flexibility
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.options('*', cors({
-    origin: [
-        'https://reese-pagtalunan.github.io',
-        'http://localhost:5173'
-    ],
+    origin: '*',
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
 // Serve static frontend files from the root directory
 app.use(express.static(path.join(__dirname, '../../')));
+
+// Log all requests for debugging
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
 // Auth0 JWT checker
 const checkJwt = auth({
@@ -50,6 +50,11 @@ socketHandler(server);
 // Health check (no auth needed)
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Explicitly serve index.html at root to prevent 404s
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../index.html'));
 });
 
 // Protected routes
