@@ -88,8 +88,8 @@ When another HiFive user is within **10 meters** of you, you get the option to s
    - `AUTH0_ISSUER`: Your Auth0 Domain (e.g., `https://dev-xxxx.us.auth0.com/`).
    - `GEMINI_API_KEY`: Your Google Gemini API Key.
 4. Set the build/run commands:
-   - Build Command: `cd backend && npm install`
-   - Start Command: `cd backend && npm start`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
 
 ### 3. Auth0 Configuration
 1. Create an API in Auth0.

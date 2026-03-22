@@ -2,11 +2,11 @@
   "name": "hackduke-chat-backend",
   "version": "1.0.0",
   "description": "Production Chat Backend",
-  "main": "src/server.js",
+  "main": "backend/src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "postinstall": "prisma generate"
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
+    "postinstall": "cd backend && prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.x",
