@@ -376,16 +376,17 @@
         <span class="success-icon">🤚</span>
         <h2>You're all set, <span id="success-name"></span>!</h2>
         <p>Your profile is saved. You're ready to start making real connections.</p>
-        <a href="index.html" class="home-btn">Go to HiFive →</a>
+        <a href="dashboard.html" class="home-btn">Go to Dashboard →</a>
       </div>
 
     </div>
   </main>
 
   <script>
-    // ── Auth0 config ───────────────────────────────────────
+    // ── Auth0 config ───────────────────────────────────
     const AUTH0_DOMAIN    = 'dev-gnf25xr2lt37ohtu.us.auth0.com';
     const AUTH0_CLIENT_ID = 'pOTTptqjjjExXAGuHaFXExOaVjgiWa4U';
+    const API_BASE        = window.location.origin;
 
     let auth0Client = null;
     let currentUser = null;
@@ -394,7 +395,10 @@
       auth0Client = await auth0.createAuth0Client({
         domain: AUTH0_DOMAIN,
         clientId: AUTH0_CLIENT_ID,
-        authorizationParams: { redirect_uri: window.location.origin + '/index.html', audience: 'https://hifive-api' }
+        authorizationParams: { 
+          redirect_uri: window.location.origin + '/profile-setup.html', 
+          audience: 'https://hifive-api' 
+        }
       });
 
       if (location.search.includes('code=') || location.search.includes('error=')) {
@@ -404,8 +408,7 @@
 
       const isLoggedIn = await auth0Client.isAuthenticated();
       if (!isLoggedIn) {
-        // Not logged in — redirect to main page
-        window.location.href = 'index.html';
+        window.location.href = '/';
         return;
       }
 
@@ -414,6 +417,8 @@
       // Pre-fill name if Auth0 has it
       if (currentUser.given_name)  document.getElementById('first-name').value = currentUser.given_name;
       if (currentUser.family_name) document.getElementById('last-name').value  = currentUser.family_name;
+      
+      updateProgress();
     }
 
     // ── Progress bar animation on focus ───────────────────
@@ -439,65 +444,40 @@
 
       if (!firstName || !lastName || !interests) return;
 
-      // Show loading
       document.getElementById('loading').classList.add('show');
 
-      // Build profile object
-      const profile = {
-        userId:    currentUser ? currentUser.sub : 'demo-user',
-        email:     currentUser ? currentUser.email : '',
-        firstName,
-        lastName,
-        interests,
-        createdAt: new Date().toISOString()
-      };
-
-    let token;
-    try {
-        token = await auth0Client.getTokenSilently({
-            authorizationParams: { audience: 'https://hifive-api' }
+      try {
+        const token = await auth0Client.getTokenSilently();
+        
+        const response = await fetch(`${API_BASE}/api/users/profile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            interests: interests
+          })
         });
-        console.log('Got token:', token ? 'YES' : 'NO');
-    } catch (err) {
-        console.error('Token error:', err);
+
+        if (!response.ok) {
+          throw new Error('Failed to save profile');
+        }
+
         document.getElementById('loading').classList.remove('show');
-        alert('Token error: ' + err.message);
-        return;
-    }
-
-      // Save to localStorage for now (replace with Firebase later)
-
-      const response = await fetch('/api/user/profile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        auth0_id: currentUser.sub,
-        first_name: firstName,
-        last_name: lastName,
-        interests: interests
-      })
-    });
-
-    if (!response.ok) {
-        const err = await response.json();
-        console.error('Profile save failed:', err);
+        document.getElementById('form-state').style.display   = 'none';
+        document.getElementById('success-state').style.display = 'block';
+        document.getElementById('success-name').textContent    = firstName;
+        document.getElementById('progress').style.width        = '100%';
+      } catch (err) {
+        console.error('Profile save error:', err);
         document.getElementById('loading').classList.remove('show');
         alert('Failed to save profile. Please try again.');
-        return;
-    }
-
-      // Hide loading, show success
-      document.getElementById('loading').classList.remove('show');
-      document.getElementById('form-state').style.display   = 'none';
-      document.getElementById('success-state').style.display = 'block';
-      document.getElementById('success-name').textContent    = firstName;
-      document.getElementById('progress').style.width        = '100%';
+      }
     });
 
-    // ── Init ───────────────────────────────────────────────
     initAuth0();
   </script>
 </body>

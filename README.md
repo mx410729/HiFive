@@ -80,32 +80,16 @@ When another HiFive user is within **10 meters** of you, you get the option to s
 
 ### 2. App Platform / Droplet Setup
 1. Upload this repository to **GitHub**.
-### Option A: Docker (Recommended)
-This is the most reliable method as it bypasses buildpack detection errors.
-1. Push your repository to GitHub (ensure `Dockerfile` is in the root).
-2. Create a new **App** on DigitalOcean.
-3. DigitalOcean will detect the `Dockerfile` and use it to build your image.
-4. Set your **Environment Variables** in the DO dashboard:
-   - `DATABASE_URL`
-   - `AUTH0_AUDIENCE`
-   - `AUTH0_ISSUER`
-   - `GEMINI_API_KEY`
-5. The app will automatically run on port 3000.
-
-### Option B: Buildpacks
-If you prefer buildpacks, ensure `package.json` is in the root (which it is).
-- Build Command: `npm install`
-- Start Command: `npm start`
-
----
-
-## Technical Details
-
-- **Entry Point:** `backend/src/server.js`
-- **Port:** Listens on `process.env.PORT || 3000`.
-- **Static Assets:** Served directly from the project root.
-
----
+2. Create a new **App** on DigitalOcean App Platform, linked to your GitHub repo.
+3. Configure the following **Environment Variables**:
+   - `PORT`: 3000 (standard)
+   - `DATABASE_URL`: Your PostgreSQL connection string.
+   - `AUTH0_AUDIENCE`: Your Auth0 API Identifier.
+   - `AUTH0_ISSUER`: Your Auth0 Domain (e.g., `https://dev-xxxx.us.auth0.com/`).
+   - `GEMINI_API_KEY`: Your Google Gemini API Key.
+4. Set the build/run commands:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
 
 ### 3. Auth0 Configuration
 1. Create an API in Auth0.
@@ -123,3 +107,4 @@ If you prefer buildpacks, ensure `package.json` is in the root (which it is).
 ---
 
 *Built with the belief that the best connections happen face to face.*
+

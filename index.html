@@ -1109,7 +1109,7 @@
       <a href="#how" class="btn-secondary">How it works</a>
     </div>
     <p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
-      ✨ Icebreakers powered by <strong>Google Gemini 2.5 Flash</strong>
+      ✨ Icebreakers powered by <strong>Google Gemini 1.5 Flash</strong>
     </p>
     <div class="hero-scroll"><span>Scroll</span>
       <div class="scroll-line"></div>
@@ -1268,7 +1268,7 @@
       <div class="fade-up">
         <div class="section-tag">AI Icebreaker</div>
         <h2 class="section-title">Never a cold "hey."</h2>
-        <p class="section-sub" style="margin-bottom: 0;">Google Gemini 2.5 Flash generates a personalized question from
+        <p class="section-sub" style="margin-bottom: 0;">Google Gemini 1.5 Flash generates a personalized question from
           your shared interests.</p>
       </div>
       <div class="ai-bubble-wrap fade-up">
@@ -1292,10 +1292,10 @@
         <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
           <button class="btn-primary" id="cta-signup-btn">Sign up free 🤚</button>
           <button class="btn-secondary" id="cta-login-btn"
-            style="border:1px solid rgba(26,86,255,0.2); cursor:pointer;">Log in</button>
+            style="border:1px solid rgba(26, 86, 255,0.2); cursor:pointer;">Log in</button>
         </div>
         <p style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
-          ✨ Icebreakers powered by <strong>Google Gemini 2.5 Flash</strong>
+          ✨ Icebreakers powered by <strong>Google Gemini 1.5 Flash</strong>
         </p>
       </div>
     </div>
@@ -1303,24 +1303,24 @@
 
   <!-- LOGIN / SIGNUP MODAL -->
   <div class="modal-overlay" id="auth-modal">
-    <div class="modal">
+    <div class="modal" style="text-align: center;">
       <button class="modal-close" id="modal-close">✕</button>
       <div class="modal-logo">Hi<span>Five</span> 🤚</div>
       <p class="modal-tagline" id="modal-tagline">Welcome back.</p>
 
-      <form id="sql-auth-form" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-        <input type="text" id="auth-username" name="username" autocomplete="username" placeholder="Username" required
-          style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
-        <input type="password" id="auth-password" name="password" autocomplete="current-password" placeholder="Password"
-          required
-          style="padding: 14px 20px; border-radius: 100px; border: 1px solid rgba(26, 86, 255, 0.15); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; width: 100%; outline: none;" />
-        <button type="submit" class="auth-submit" id="sql-submit-btn">Continue</button>
-        <div id="auth-error" style="color: #ff4d4f; font-size: 0.85rem; text-align: center; margin-top: -4px;"></div>
-      </form>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <button class="auth-btn google" id="google-btn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
+          Continue with Google
+        </button>
+        <button class="auth-btn apple" id="apple-btn">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" height="16" alt="Apple" style="filter: invert(1);">
+          Continue with Apple
+        </button>
+        <div class="auth-divider">or</div>
+        <button class="auth-submit" id="email-login-btn">Log in / Sign up with Email</button>
+      </div>
 
-      <p class="auth-footer-text" style="margin-top:16px;" id="auth-toggle-text">
-        Already have an account? <a href="#" id="auth-toggle-link">Log in</a>
-      </p>
       <p class="auth-footer-text" style="font-size: 0.75rem; margin-top: 12px; opacity: 0.6;">By continuing you agree to
         our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>.</p>
     </div>
@@ -1338,7 +1338,6 @@
     // ── Auth0 configuration ─────────────────────────────────────────
     const AUTH0_DOMAIN    = 'dev-gnf25xr2lt37ohtu.us.auth0.com';
     const AUTH0_CLIENT_ID = 'pOTTptqjjjExXAGuHaFXExOaVjgiWa4U';
-    const API_BASE        = 'http://localhost:8080'; // Update this to your cloud URL later
 
     let auth0Client = null;
 
@@ -1356,9 +1355,6 @@
       if (location.search.includes('code=') || location.search.includes('error=')) {
         await auth0Client.handleRedirectCallback();
         window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // After login, we can redirect to dashboard or sync profile
-        window.location.href = 'dashboard.html';
       }
 
       updateUI();
@@ -1376,7 +1372,10 @@
         document.getElementById('nav-username').textContent = user.nickname || user.name || user.email;
         if (user.picture) {
           const avatar = document.getElementById('nav-avatar');
-          if (avatar) avatar.src = user.picture;
+          if (avatar) {
+              avatar.src = user.picture;
+              avatar.style.display = 'block';
+          }
         }
 
         // Update the hero/cta buttons to point to the dashboard
@@ -1414,13 +1413,15 @@
     const modal = document.getElementById('auth-modal');
 
     function openModal(isSignup = false) {
-      if (document.getElementById('nav-user').style.display === 'flex') {
-        window.location.href = 'dashboard.html';
-        return;
-      }
-      document.getElementById('modal-tagline').textContent = isSignup ? 'Create your account.' : 'Welcome back.';
-      modal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      auth0Client.isAuthenticated().then(isLoggedIn => {
+          if (isLoggedIn) {
+            window.location.href = 'dashboard.html';
+          } else {
+            document.getElementById('modal-tagline').textContent = isSignup ? 'Create your account.' : 'Welcome back.';
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+          }
+      });
     }
 
     function closeModal() {

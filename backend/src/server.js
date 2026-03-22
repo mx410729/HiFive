@@ -9,6 +9,7 @@ const locationRoutes = require('./routes/location');
 const friendsRoutes = require('./routes/friends');
 const usersRoutes = require('./routes/user');
 const messagesRoutes = require('./routes/messages');
+const chatRoutes = require('./routes/chat'); // Add this
 const icebreakerRoutes = require('./routes/icebreaker');
 
 const path = require('path');
@@ -55,7 +56,9 @@ app.get('/health', (req, res) => {
 app.use('/api/location', checkJwt, locationRoutes);
 app.use('/api/friends', checkJwt, friendsRoutes);
 app.use('/api/user', checkJwt, usersRoutes);
+app.use('/api/users', checkJwt, usersRoutes); // Support both plural and singular
 app.use('/api/messages', checkJwt, messagesRoutes);
+app.use('/api/chat', checkJwt, chatRoutes); // Add chat routes
 app.use('/api/icebreaker', checkJwt, icebreakerRoutes);
 
 const PORT = process.env.PORT || 3000;
